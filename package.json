@@ -1,0 +1,68 @@
+{
+  "name": "time-tracker",
+  "displayName": "time tracker",
+  "description": "extension to track time in visual studio",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.97.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "time-tracker.helloWorld",
+        "title": "Hello World"
+      }
+    ],
+    "activationEvents": [
+      "*"
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "Time Tracker Settings",
+      "properties": {
+        "timeTracker.gitUsername": {
+          "type": "string",
+          "default": "",
+          "description": "Github Username (REQUIRED)."
+        },
+        "timeTracker.repo": {
+          "type": "string",
+          "default": "",
+          "description": "Repo Name (Required)"
+        },
+        "timeTracker.gitHubToken": {
+          "type": "string",
+          "default": "",
+          "description": "gitHubToken (Required)"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.97.0",
+    "@typescript-eslint/eslint-plugin": "^8.22.0",
+    "@typescript-eslint/parser": "^8.22.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.19.0",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@octokit/rest": "^21.1.0"
+  }
+}
