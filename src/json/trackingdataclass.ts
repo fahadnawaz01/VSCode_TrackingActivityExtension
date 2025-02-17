@@ -47,14 +47,14 @@ export default class TimeTracker {
 
   toJSON(): {
     timer: number;
-    filetype: [string, number][];
-    myDate: string;
+    fileType: [string, number][];
+    date: Date;
   } {
     // Add types for better clarity
     return {
       timer: this._timer,
-      filetype: Object.entries(this._filetype),
-      myDate: this._myDate.toISOString(), // Convert Date to string for JSON
+      fileType: Object.entries(this._filetype),
+      date: this._myDate, // Convert Date to string for JSON
     };
   }
 }

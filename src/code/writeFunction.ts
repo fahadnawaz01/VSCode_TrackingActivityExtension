@@ -1,7 +1,9 @@
 import * as fs from "fs/promises";
 import path from "path";
+import vscode from "vscode";
 
 import { trackingDataInterface } from "../interface/trackingDataInterface";
+import { gitPush } from "./gitpush";
 
 export async function writeFunction(
   filePath: string,
@@ -17,4 +19,16 @@ export async function writeFunction(
   }
 }
 
-
+export async function writeFile(
+  jsonData: trackingDataInterface,
+  context: vscode.ExtensionContext
+) {
+  const filePath = path.join(
+    context.extensionPath,
+    "src",
+    "json",
+    "trackingData.json"
+  );
+  await writeFunction(filePath, jsonData);
+  await gitPush(filePath);
+}

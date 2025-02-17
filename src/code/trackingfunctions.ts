@@ -2,9 +2,10 @@ import TimeTracker from "../json/trackingdataclass";
 import vscode from "vscode";
 import { exec } from "child_process";
 import { trackingDataInterface } from "../interface/trackingDataInterface";
-import { writeFunction } from "./writeFunction";
+import { writeFile, writeFunction } from "./writeFunction";
 import path from "path";
 import { gitPush } from "./gitpush";
+import { checkTime } from "./timeFunctions";
 
 let tracking: boolean = true;
 let stoppedtracking: boolean = false;
@@ -19,12 +20,6 @@ function getFileType(document: vscode.TextDocument): string {
   return document.languageId;
 }
 
-async function checkTime() {
-  if (timeTracker.getTimer >= 30) {
-    await writeFile();
-  }
-}
-
 export async function startTracking(
   context: vscode.ExtensionContext,
   openedNewDoc: boolean = false
@@ -33,7 +28,8 @@ export async function startTracking(
   if (editor && openedNewDoc) {
     const document = editor.document;
     fileType.add(getFileType(document));
-    console.log("file's opened this session: " + fileType);
+    console.log("file's opened this session: ");
+    console.log(fileType);
   }
 
   if (tracking) {
@@ -47,7 +43,7 @@ export async function startTracking(
     console.log("Date registered : " + timeTracker.getMyDate);
 
     const intervalId = setInterval(() => {
-      checkTime();
+      checkTime(timeTracker.getTimer, context, timeTracker.toJSON());
     }, 5 * 60 * 1000);
   }
 }
@@ -69,8 +65,10 @@ export async function stopTracking(
 
       fileType.forEach((e) => {
         if (timeTracker.getTimeForFileType(e)) {
-          time += timeTracker.getTimeForFileType(e) ?? time;
-          timeTracker.addFileType(e, time);
+          timeTracker.addFileType(
+            e,
+            time + (timeTracker.getTimeForFileType(e) ?? 0)
+          );
         } else {
           timeTracker.addFileType(e, time);
         }
@@ -78,9 +76,9 @@ export async function stopTracking(
       fileType.clear();
 
       console.log(
-        "All the file and time spent on file registered this session : " +
-          timeTracker.getFiletype
+        "All the file and time spent on file registered this session : "
       );
+      console.log(timeTracker.getFiletype);
       timer += (endTime.getTime() - startTime.getTime()) / (60 * 1000);
       console.log(timer);
       if (timer < 35) {
@@ -93,25 +91,9 @@ export async function stopTracking(
 
   if (pushData) {
     try {
-      await writeFile();
+      await writeFile(timeTracker.toJSON(), cont);
     } catch (err) {
       console.error(err);
     }
   }
-}
-
-async function writeFile() {
-  const jsonData: trackingDataInterface = {
-    timer: timeTracker.getTimer,
-    date: timeTracker.getMyDate,
-    fileType: Object.entries(timeTracker.getFiletype),
-  };
-  const filePath = path.join(
-    cont.extensionPath,
-    "src",
-    "json",
-    "trackingData.json"
-  );
-  await writeFunction(filePath, jsonData);
-  await gitPush(filePath);
 }
