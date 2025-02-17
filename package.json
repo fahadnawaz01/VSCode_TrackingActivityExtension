@@ -16,6 +16,10 @@
       {
         "command": "time-tracker.helloWorld",
         "title": "Hello World"
+      },
+      {
+        "command": "time-tracker.showGraph",
+        "title": "Show Graph"
       }
     ],
     "activationEvents": [
