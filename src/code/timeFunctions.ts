@@ -1,3 +1,8 @@
+import vscode from "vscode";
+
+import { writeFile } from "./writeFunction";
+import { trackingDataInterface } from "../interface/trackingDataInterface";
+
 const today: Date = new Date();
 
 const months = {
@@ -43,4 +48,14 @@ export function getDate(): string {
 
 export function getTime(): string {
   return `${hours}-${minutes}-${seconds}-${milliseconds}`;
+}
+
+export async function checkTime(
+  timer: number,
+  context: vscode.ExtensionContext,
+  jsonData: trackingDataInterface
+) {
+  if (timer >= 30) {
+    await writeFile(jsonData, context);
+  }
 }

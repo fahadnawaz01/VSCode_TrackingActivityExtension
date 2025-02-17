@@ -10,7 +10,6 @@ const trackingdata = data;
 export function activate(context: vscode.ExtensionContext) {
   console.log('Congratulations, your extension "time-tracker" is now active!');
 
-  
   vscode.workspace.onDidOpenTextDocument((event) => {
     startTracking(context, true);
   });
