@@ -37,68 +37,64 @@ export function activate(context: vscode.ExtensionContext) {
     }
   );
 
-  // disposable = vscode.commands.registerCommand(
-  //   "time-tracker.showGraph",
-  //   async () => {
-  //     const graphFolderPath = path.posix.join(
-  //       context.extensionPath,
-  //       "src",
-  //       "graph"
-  //     );
-  //     const graphFolderUri = vscode.Uri.parse(`file://${graphFolderPath}`);
+  disposable = vscode.commands.registerCommand(
+    "time-tracker.showGraph",
+    async () => {
+      const panel = vscode.window.createWebviewPanel(
+        "timeTrackerGraph",
+        "Time Tracker Graph",
+        vscode.ViewColumn.One,
+        {
+          enableScripts: true,
+          localResourceRoots: [
+            vscode.Uri.file(path.join(context.extensionPath, "src")),
+          ], // The crucial fix: Put the Uri in an ARRAY!
+        }
+      );
+      const graphJsUri = panel.webview.asWebviewUri(
+        vscode.Uri.joinPath(context.extensionUri, "src", "graph", "graph.js")
+      );
 
-  //     console.log("Graph Folder Path (String):", graphFolderPath);
-  //     console.log("Graph Folder URI:", graphFolderUri);
+      const html = getWebviewContent(panel.webview, graphJsUri);
+      console.log("Generated HTML:", html); // Log the HTML!
 
-  //     const panel = vscode.window.createWebviewPanel(
-  //       "timeTrackerGraph",
-  //       "Time Tracker Graph",
-  //       vscode.ViewColumn.One,
-  //       {
-  //         enableScripts: true,
-  //         localResourceRoots: [graphFolderUri], // The crucial fix: Put the Uri in an ARRAY!
-  //       }
-  //     );
-  //     const graphJsUri = panel.webview.asWebviewUri(
-  //       vscode.Uri.joinPath(graphFolderUri, "graph.js")
-  //     ); // Get URI for graph.js
-  //     console.log("graph.js URI:", graphJsUri); // Log it for debugging
+      await fetchLogs(panel);
+      // Set the HTML content of the webview:
+      panel.webview.html = html;
 
-  //     await fetchLogs(panel);
-  //     // Set the HTML content of the webview:
-  //     panel.webview.html = `<!DOCTYPE html>
-  //   <html>
-  //   <head>
-  //       <title>Time Tracker Graph</title>
-  //   </head>
-  //      <body>
-  //       <h1>Time Spent on Languages</h1>
-  //       <div id="graph-container"></div>
-  //       <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  //       <script src="graph.js"></script> </body>
-  //   </html>`;
-
-  //     // Handle messages from the webview (if needed):
-  //     panel.webview.onDidReceiveMessage(
-  //       (message) => {
-  //         // ... handle messages from the webview ...
-  //       },
-  //       undefined,
-  //       context.subscriptions
-  //     );
-
-  //     // Send a message to the webview (if needed):
-  //     panel.webview.postMessage({
-  //       command: "updateData",
-  //       data: {
-  //         /* your data here */
-  //       },
-  //     });
-  //   }
-  // );
+      // Handle messages from the webview (if needed):
+      panel.webview.onDidReceiveMessage(
+        (message) => {
+          // ... handle messages from the webview ...
+        },
+        undefined,
+        context.subscriptions
+      );
+    }
+  );
 
   context.subscriptions.push(disposable);
 }
 export async function deactivate(context: vscode.ExtensionContext) {
   await stopTracking(context, true);
 }
+
+// ... (Your extension.ts code)
+
+function getWebviewContent(
+  webview: vscode.Webview,
+  graphJsUri: vscode.Uri
+): string {
+  return `<!DOCTYPE html>
+  <html>
+  <head>
+      <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' ${webview.cspSource} https://cdn.jsdelivr.net; style-src 'self' ${webview.cspSource}; img-src 'self' ${webview.cspSource};">
+      <title>Time Tracker Graph</title>
+  </head>
+  <body>
+      <h1>Time Spent on Languages</h1>
+      <canvas id="graph-container"></canvas>  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script src="${graphJsUri}" defer></script> </body>
+  </html>`;
+}
+// ... (rest of your code)

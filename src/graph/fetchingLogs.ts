@@ -57,6 +57,31 @@ async function fetchLogsFromGitHub(
   return logs;
 }
 
+function transformData(logs: any[]): { labels: string[]; values: number[] } {
+  const labels: string[] = [];
+  const values: number[] = [];
+  const data: Record<string, number> = {};
+  for (const log of logs) {
+    const date = new Date(log.date).getDate();
+    const month = new Date(log.date).getMonth();
+    const year = new Date(log.date).getFullYear();
+
+    if (data[`${date}/${month}/${year}`]) {
+      data[`${date}/${month}/${year}`] += log.timer ?? 0;
+    } else {
+      data[`${date}/${month}/${year}`] = log.timer ?? 0;
+    }
+  }
+  for (const date in data) {
+    if (data.hasOwnProperty(date)) {
+      // Important: Check for own properties
+      labels.push(date);
+      values.push(data[date]);
+    }
+  }
+  return { labels, values };
+}
+
 export async function fetchLogs(panel: vscode.WebviewPanel) {
   const config = vscode.workspace.getConfiguration("timeTracker");
   const owner = config.get<string>("gitUsername");
@@ -67,9 +92,13 @@ export async function fetchLogs(panel: vscode.WebviewPanel) {
     const logs = await fetchLogsFromGitHub(owner, repo, githubToken);
     console.log("Fetched logs:", logs);
     // ... now you have all your JSON logs in the 'logs' array ...
+    const transformedData = transformData(logs);
     if (logs) {
       // Send logs to the webview
-      panel.webview.postMessage({ command: "updateData", data: logs });
+      panel.webview.postMessage({
+        command: "updateData",
+        data: transformedData,
+      });
     }
   }
 }
