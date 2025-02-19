@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
-import * as data from "./json/trackingdataclass";
-import { startTracking, stopTracking } from "./code/trackingfunctions";
+import * as data from "./logging/trackingdataclass";
+import { startTracking, stopTracking } from "./logging/trackingfunctions";
 import { fetchLogs } from "./graph/fetchingLogs";
 import path from "path";
 

@@ -1,4 +1,4 @@
-import TimeTracker from "../json/trackingdataclass";
+import TimeTracker from "./trackingdataclass";
 import vscode from "vscode";
 import { exec } from "child_process";
 import { trackingDataInterface } from "../interface/trackingDataInterface";
