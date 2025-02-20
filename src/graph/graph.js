@@ -50,7 +50,7 @@
               labels: labels,
               datasets: [
                 {
-                  label: "Time Spent (Hours)",
+                  label: "Time Spent (Minutes)",
                   data: values,
                   backgroundColor: [
                     // Add some colors

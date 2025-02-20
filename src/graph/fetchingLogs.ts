@@ -1,5 +1,20 @@
 import vscode from "vscode";
 
+const months = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 async function fetchLogsFromGitHub(
   owner: string,
   repo: string,
@@ -8,7 +23,7 @@ async function fetchLogsFromGitHub(
 ): Promise<any[]> {
   const { Octokit } = await import("@octokit/rest");
   const octokit = new Octokit({ auth: token });
-  const logs: any[] = []; // Array to store all JSON logs
+  const logs: any = {}; // Array to store all JSON logs
 
   async function traverseDirectory(path: string) {
     try {
@@ -20,7 +35,11 @@ async function fetchLogsFromGitHub(
 
       if (Array.isArray(response.data)) {
         for (const item of response.data) {
-          if (item.type === "dir") {
+          if (
+            (item.type === "dir" && /^\d{4}$/.test(item.name)) ||
+            months.includes(item.name) ||
+            /^\d{2}$/.test(item.name)
+          ) {
             await traverseDirectory(item.path);
           } else if (
             item.type === "file" &&
@@ -38,7 +57,23 @@ async function fetchLogsFromGitHub(
                   fileResponse.data.content,
                   "base64"
                 ).toString();
-                logs.push(JSON.parse(content));
+                const pathSplit = item.path.split("/");
+                const year = pathSplit[0];
+                const month = pathSplit[1];
+                const day = pathSplit[2];
+
+                if (!logs[year]) {
+                  logs[year] = {};
+                }
+                if (!logs[year][month]) {
+                  logs[year][month] = {};
+                }
+                if (!logs[year][month][day]) {
+                  logs[year][month][day] = [];
+                }
+
+                console.log(item.path);
+                logs[year][month][day].push(JSON.parse(content));
               } else {
                 console.error(`Invalid response for file: ${item.path}`);
               }
@@ -57,28 +92,43 @@ async function fetchLogsFromGitHub(
   return logs;
 }
 
-function transformData(logs: any[]): { labels: string[]; values: number[] } {
+const data: Record<string, number> = {};
+function transformData(logs: any): Record<string, number> {
+  if (!Array.isArray(logs)) {
+    console.log(logs);
+    for (const key in logs) {
+      allTimeTransformData(logs[key]);
+    }
+  } else {
+    for (const log of logs) {
+      for (const i in log.fileType) {
+        if (data[log.fileType[i][0]] && Array.isArray(log.fileType[i])) {
+          data[log.fileType[i][0]] += log.fileType[i][1];
+        } else if (Array.isArray(log.fileType[i])) {
+          data[log.fileType[i][0]] = log.fileType[i][1];
+        }
+      }
+    }
+  }
+
+  return data;
+}
+
+function allTimeTransformData(logs: any): {
+  labels: string[];
+  values: number[];
+} {
   const labels: string[] = [];
   const values: number[] = [];
-  const data: Record<string, number> = {};
-  for (const log of logs) {
-    const date = new Date(log.date).getDate();
-    const month = new Date(log.date).getMonth();
-    const year = new Date(log.date).getFullYear();
+  const data: Record<string, number> = transformData(logs);
 
-    if (data[`${date}/${month}/${year}`]) {
-      data[`${date}/${month}/${year}`] += log.timer ?? 0;
-    } else {
-      data[`${date}/${month}/${year}`] = log.timer ?? 0;
+  for (const label in data) {
+    if (data.hasOwnProperty(label)) {
+      labels.push(label);
+      values.push(data[label]);
     }
   }
-  for (const date in data) {
-    if (data.hasOwnProperty(date)) {
-      // Important: Check for own properties
-      labels.push(date);
-      values.push(data[date]);
-    }
-  }
+
   return { labels, values };
 }
 
@@ -92,12 +142,11 @@ export async function fetchLogs(panel: vscode.WebviewPanel) {
     const logs = await fetchLogsFromGitHub(owner, repo, githubToken);
     console.log("Fetched logs:", logs);
     // ... now you have all your JSON logs in the 'logs' array ...
-    const transformedData = transformData(logs);
     if (logs) {
       // Send logs to the webview
       panel.webview.postMessage({
         command: "updateData",
-        data: transformedData,
+        data: allTimeTransformData(logs),
       });
     }
   }
