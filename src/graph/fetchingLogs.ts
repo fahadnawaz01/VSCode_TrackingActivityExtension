@@ -15,6 +15,9 @@ const months = [
   "December",
 ];
 
+const yearList: string[] = [];
+const monthList: string[] = [];
+
 async function fetchLogsFromGitHub(
   owner: string,
   repo: string,
@@ -63,16 +66,17 @@ async function fetchLogsFromGitHub(
                 const day = pathSplit[2];
 
                 if (!logs[year]) {
+                  yearList.push(year);
                   logs[year] = {};
                 }
                 if (!logs[year][month]) {
+                  monthList.push(`${month}-${year}`);
                   logs[year][month] = {};
                 }
                 if (!logs[year][month][day]) {
                   logs[year][month][day] = [];
                 }
 
-                console.log(item.path);
                 logs[year][month][day].push(JSON.parse(content));
               } else {
                 console.error(`Invalid response for file: ${item.path}`);
@@ -92,10 +96,9 @@ async function fetchLogsFromGitHub(
   return logs;
 }
 
-const data: Record<string, number> = {};
+let data: Record<string, number> = {};
 function transformData(logs: any): Record<string, number> {
   if (!Array.isArray(logs)) {
-    console.log(logs);
     for (const key in logs) {
       allTimeTransformData(logs[key]);
     }
@@ -114,13 +117,27 @@ function transformData(logs: any): Record<string, number> {
   return data;
 }
 
-function allTimeTransformData(logs: any): {
+function yearlyTransformData(logs: any, year: string): Record<string, number> {
+  const yearlyData: Record<string, number> = {};
+
+  for (const key in logs) {
+    if (key === year) {
+      data = transformData(logs[key]);
+    }
+  }
+
+  return data;
+}
+
+export function allTimeTransformData(logs: any): {
   labels: string[];
   values: number[];
+  year: string[];
 } {
   const labels: string[] = [];
   const values: number[] = [];
   const data: Record<string, number> = transformData(logs);
+  const year = yearList;
 
   for (const label in data) {
     if (data.hasOwnProperty(label)) {
@@ -129,7 +146,7 @@ function allTimeTransformData(logs: any): {
     }
   }
 
-  return { labels, values };
+  return { labels, values, year };
 }
 
 export async function fetchLogs(panel: vscode.WebviewPanel) {
@@ -146,7 +163,7 @@ export async function fetchLogs(panel: vscode.WebviewPanel) {
       // Send logs to the webview
       panel.webview.postMessage({
         command: "updateData",
-        data: allTimeTransformData(logs),
+        data: { month: monthList, year: yearList, logs },
       });
     }
   }

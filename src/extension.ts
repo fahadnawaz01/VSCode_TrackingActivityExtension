@@ -11,6 +11,8 @@ const trackingdata = data;
 
 export function activate(context: vscode.ExtensionContext) {
   console.log('Congratulations, your extension "time-tracker" is now active!');
+  vscode.window.showInformationMessage("Activity tracking is on!");
+  startTracking(context, true);
 
   vscode.workspace.onDidOpenTextDocument((event) => {
     startTracking(context, true);
@@ -31,13 +33,6 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   let disposable = vscode.commands.registerCommand(
-    "time-tracker.helloWorld",
-    () => {
-      vscode.window.showInformationMessage("Hello World from time tracker!");
-    }
-  );
-
-  disposable = vscode.commands.registerCommand(
     "time-tracker.showGraph",
     async () => {
       const panel = vscode.window.createWebviewPanel(
@@ -86,15 +81,32 @@ function getWebviewContent(
   graphJsUri: vscode.Uri
 ): string {
   return `<!DOCTYPE html>
-  <html>
-  <head>
-      <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' ${webview.cspSource} https://cdn.jsdelivr.net; style-src 'self' ${webview.cspSource}; img-src 'self' ${webview.cspSource};">
-      <title>Time Tracker Graph</title>
-  </head>
-  <body>
-      <h1>Time Spent on Languages</h1>
-      <canvas id="graph-container"></canvas>  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-      <script src="${graphJsUri}" defer></script> </body>
-  </html>`;
+<html>
+<head>
+    <title>Time Tracker Graph</title>
+    </head>
+<body>
+    <h1>Time Spent on Languages</h1>
+
+    <div id="controls">
+        <label for="graph-type">Graph Type:</label>
+        <select id="graph-type">
+            <option value="yearly">Yearly</option>
+            <option value="monthly">Monthly</option>
+        </select>
+
+        <label for="year-select">Year:</label>
+        <select id="year-select">
+            </select>
+
+        <label for="month-select">Month:</label>
+        <select id="month-select">
+            </select>
+    </div>
+
+    <canvas id="graph-container"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="${graphJsUri}" defer></script> </body>
+</html>`;
 }
 // ... (rest of your code)
