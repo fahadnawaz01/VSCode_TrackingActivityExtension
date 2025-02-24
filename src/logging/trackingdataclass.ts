@@ -50,11 +50,11 @@ export default class TimeTracker {
     fileType: [string, number][];
     date: Date;
   } {
-    // Add types for better clarity
+    
     return {
       timer: this._timer,
       fileType: Object.entries(this._filetype),
-      date: this._myDate, // Convert Date to string for JSON
+      date: this._myDate, 
     };
   }
 }

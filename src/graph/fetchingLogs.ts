@@ -15,8 +15,10 @@ const months = [
   "December",
 ];
 
-const yearList: string[] = [];
-const monthList: string[] = [];
+let logFlag = false; //true when the data is already present in the log
+
+let yearList: string[] = [];
+let monthList: string[] = [];
 
 async function fetchLogsFromGitHub(
   owner: string,
@@ -26,7 +28,7 @@ async function fetchLogsFromGitHub(
 ): Promise<any[]> {
   const { Octokit } = await import("@octokit/rest");
   const octokit = new Octokit({ auth: token });
-  const logs: any = {}; // Array to store all JSON logs
+  const logs: any = {};
 
   async function traverseDirectory(path: string) {
     try {
@@ -48,7 +50,6 @@ async function fetchLogsFromGitHub(
             item.type === "file" &&
             /^\d{2}-\d{2}-\d{2}-\d{3}$/.test(item.name)
           ) {
-            // Check for JSON files
             try {
               const fileResponse = await octokit.repos.getContent({
                 owner,
@@ -92,7 +93,7 @@ async function fetchLogsFromGitHub(
     }
   }
 
-  await traverseDirectory(basePath); // Start the recursive traversal from the base path
+  await traverseDirectory(basePath);
   return logs;
 }
 
@@ -154,13 +155,12 @@ export async function fetchLogs(panel: vscode.WebviewPanel) {
   const owner = config.get<string>("gitUsername");
   const repo = config.get<string>("repo");
   const githubToken = config.get<string>("gitHubToken");
+  yearList = [];
+  monthList = [];
 
   if (owner && repo && githubToken) {
     const logs = await fetchLogsFromGitHub(owner, repo, githubToken);
-    console.log("Fetched logs:", logs);
-    // ... now you have all your JSON logs in the 'logs' array ...
     if (logs) {
-      // Send logs to the webview
       panel.webview.postMessage({
         command: "updateData",
         data: { month: monthList, year: yearList, logs },

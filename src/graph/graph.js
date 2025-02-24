@@ -1,11 +1,5 @@
-// ./graph/graph.js
-
 (function () {
-  console.log("graph.js loaded!");
-
   document.addEventListener("DOMContentLoaded", function () {
-    console.log("DOM fully loaded!");
-
     const graphTypeSelect = document.getElementById("graph-type");
     const yearSelect = document.getElementById("year-select");
     const monthSelect = document.getElementById("month-select");
@@ -15,8 +9,8 @@
 
     if (ctx) {
       function populateDropdowns(data) {
-        const years = data.year || {}; // Handle potential null/undefined data
-        const months = data.month || {}; // Handle potential null/undefined data
+        const years = data.year || {};
+        const months = data.month || {};
         yearSelect.innerHTML = '<option value="">Select Year</option>';
         years.forEach((year) => {
           const option = document.createElement("option");
@@ -25,7 +19,6 @@
           yearSelect.appendChild(option);
         });
 
-        console.log(months);
         monthSelect.disabled = true;
         monthSelect.innerHTML = '<option value="">Select Month</option>';
       }
@@ -43,11 +36,9 @@
             vscodeData &&
             vscodeData.year.includes(selectedYear)
           ) {
-            // Check if vscodeData exists
             chartData = allTimeTransformData(vscodeData.logs[selectedYear]);
           }
         } else if (graphType === "monthly") {
-          console.log(selectedYear, selectedMonth);
           if (
             selectedYear &&
             selectedMonth &&
@@ -62,7 +53,7 @@
           }
         }
 
-        const labels = chartData.labels || []; // Use chartData directly
+        const labels = chartData.labels || [];
         const values = chartData.values || [];
 
         if (myChart) {
@@ -113,7 +104,7 @@
           options: {
             scales: {
               y: {
-                beginAtZero: true, // Start y-axis at 0
+                beginAtZero: true,
               },
             },
           },
@@ -122,17 +113,16 @@
 
       graphTypeSelect.addEventListener("change", updateChart);
       yearSelect.addEventListener("change", () => {
-        console.log("hey");
-        updateChart(); // Call updateChart when the year changes
+        updateChart();
         const selectedYear = yearSelect.value;
         if (
           selectedYear &&
           vscodeData &&
           vscodeData.year.includes(selectedYear)
         ) {
-          const months = vscodeData.month; // Get months for selected year
+          const months = vscodeData.month;
 
-          monthSelect.innerHTML = '<option value="">Select Month</option>'; // Clear previous options
+          monthSelect.innerHTML = '<option value="">Select Month</option>';
           months.forEach((month) => {
             if (month.endsWith(selectedYear)) {
               month = month.split("-")[0];
@@ -142,14 +132,32 @@
               monthSelect.appendChild(option);
             }
           });
-          monthSelect.disabled = false; // Enable month select
+          monthSelect.disabled = false;
         } else {
-          monthSelect.disabled = true; // Disable if no year selected or no data
-          monthSelect.innerHTML = '<option value="">Select Month</option>'; // Clear month options
+          monthSelect.disabled = true;
+          monthSelect.innerHTML = '<option value="">Select Month</option>';
         }
       });
 
       monthSelect.addEventListener("change", updateChart);
+
+      document.addEventListener("visibilitychange", function () {
+        populateDropdowns(vscodeData);
+        updateChart();
+        console.log("Visibility changed to", document.visibilityState);
+        console.log(vscodeData);
+        if (document.visibilityState === "visible") {
+          if (myChart) {
+            myChart.destroy(); // Destroy the old chart
+          }
+          populateDropdowns(vscodeData);
+
+          updateChart(); // Recreate or update the chart
+          console.log("Tab is visible - recreating chart");
+        } else {
+          console.log("Tab is hidden");
+        }
+      });
 
       window.addEventListener("message", (event) => {
         const message = event.data;
@@ -160,25 +168,24 @@
         }
       });
 
-      updateChart(); // Initial chart setup
+      updateChart();
     } else {
       console.error("Could not get canvas context!");
     }
   });
 })();
 
-let data = {}; // Initialize data outside the functions
+let data = {};
 
 function transformData(logs) {
   if (!Array.isArray(logs)) {
     for (const key in logs) {
-      transformData(logs[key]); // Recursive call
+      transformData(logs[key]);
     }
   } else {
     for (const log of logs) {
       for (const i in log.fileType) {
         if (Array.isArray(log.fileType[i])) {
-          // Check if it's an array before accessing elements
           const fileType = log.fileType[i][0];
           const value = log.fileType[i][1];
 
@@ -195,10 +202,10 @@ function transformData(logs) {
 }
 
 function allTimeTransformData(logs) {
-  data = {}; // Reset data before processing all time data
+  data = {};
   const labels = [];
   const values = [];
-  const transformedData = transformData(logs); // Use transformData to populate the 'data' object.
+  const transformedData = transformData(logs);
 
   for (const label in transformedData) {
     if (transformedData.hasOwnProperty(label)) {
@@ -207,5 +214,5 @@ function allTimeTransformData(logs) {
     }
   }
 
-  return { labels, values }; // No need to return 'year' if it's not needed.
+  return { labels, values };
 }

@@ -28,8 +28,6 @@ export async function startTracking(
   if (editor && openedNewDoc) {
     const document = editor.document;
     fileType.add(getFileType(document));
-    console.log("file's opened this session: ");
-    console.log(fileType);
   }
 
   if (tracking) {

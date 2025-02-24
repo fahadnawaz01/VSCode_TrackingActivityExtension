@@ -43,7 +43,8 @@ export function activate(context: vscode.ExtensionContext) {
           enableScripts: true,
           localResourceRoots: [
             vscode.Uri.file(path.join(context.extensionPath, "src")),
-          ], // The crucial fix: Put the Uri in an ARRAY!
+          ],
+          retainContextWhenHidden: true,
         }
       );
       const graphJsUri = panel.webview.asWebviewUri(
@@ -51,20 +52,10 @@ export function activate(context: vscode.ExtensionContext) {
       );
 
       const html = getWebviewContent(panel.webview, graphJsUri);
-      console.log("Generated HTML:", html); // Log the HTML!
 
       await fetchLogs(panel);
-      // Set the HTML content of the webview:
-      panel.webview.html = html;
 
-      // Handle messages from the webview (if needed):
-      panel.webview.onDidReceiveMessage(
-        (message) => {
-          // ... handle messages from the webview ...
-        },
-        undefined,
-        context.subscriptions
-      );
+      panel.webview.html = html;
     }
   );
 
@@ -73,8 +64,6 @@ export function activate(context: vscode.ExtensionContext) {
 export async function deactivate(context: vscode.ExtensionContext) {
   await stopTracking(context, true);
 }
-
-// ... (Your extension.ts code)
 
 function getWebviewContent(
   webview: vscode.Webview,
@@ -109,4 +98,3 @@ function getWebviewContent(
     <script src="${graphJsUri}" defer></script> </body>
 </html>`;
 }
-// ... (rest of your code)
