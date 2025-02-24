@@ -141,24 +141,6 @@
 
       monthSelect.addEventListener("change", updateChart);
 
-      document.addEventListener("visibilitychange", function () {
-        populateDropdowns(vscodeData);
-        updateChart();
-        console.log("Visibility changed to", document.visibilityState);
-        console.log(vscodeData);
-        if (document.visibilityState === "visible") {
-          if (myChart) {
-            myChart.destroy(); // Destroy the old chart
-          }
-          populateDropdowns(vscodeData);
-
-          updateChart(); // Recreate or update the chart
-          console.log("Tab is visible - recreating chart");
-        } else {
-          console.log("Tab is hidden");
-        }
-      });
-
       window.addEventListener("message", (event) => {
         const message = event.data;
         if (message.command === "updateData") {
