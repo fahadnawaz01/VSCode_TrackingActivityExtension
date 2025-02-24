@@ -56,7 +56,7 @@ async function uploadFile(
   });
   const newTreeSha = newTreeResponse.data.sha;
 
-  // 5. Create a commit
+  
   const newCommitResponse = await octokit.git.createCommit({
     owner,
     repo,
@@ -66,7 +66,7 @@ async function uploadFile(
   });
   const newCommitSha = newCommitResponse.data.sha;
 
-  // 6. Update the branch reference
+  
   await octokit.git.updateRef({
     owner,
     repo,

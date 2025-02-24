@@ -1,4 +1,4 @@
-import TimeTracker from "../json/trackingdataclass";
+import TimeTracker from "./trackingdataclass";
 import vscode from "vscode";
 import { exec } from "child_process";
 import { trackingDataInterface } from "../interface/trackingDataInterface";
@@ -28,8 +28,6 @@ export async function startTracking(
   if (editor && openedNewDoc) {
     const document = editor.document;
     fileType.add(getFileType(document));
-    console.log("file's opened this session: ");
-    console.log(fileType);
   }
 
   if (tracking) {
