@@ -143,6 +143,7 @@
 
       window.addEventListener("message", (event) => {
         const message = event.data;
+
         if (message.command === "updateData") {
           vscodeData = message.data;
           populateDropdowns(message.data);

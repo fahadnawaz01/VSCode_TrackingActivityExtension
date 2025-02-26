@@ -1,8 +1,9 @@
 {
-  "name": "time-tracker",
-  "displayName": "time tracker",
+  "name": "Activity-Tracker01",
+  "displayName": "Activity Tracker for VSCode",
   "description": "extension to track time in visual studio",
-  "version": "0.0.1",
+  "version": "0.0.2",
+  "publisher": "ActivityTrackerforvscode",
   "engines": {
     "vscode": "^1.97.0"
   },
@@ -48,6 +49,10 @@
         }
       }
     }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/fahadnawaz01/VSCode_TrackingActivityExtension"
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

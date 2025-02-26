@@ -25,7 +25,7 @@ export async function writeFile(
 ) {
   const filePath = path.join(
     context.extensionPath,
-    "src",
+    "out",
     "json",
     "trackingData.json"
   );
