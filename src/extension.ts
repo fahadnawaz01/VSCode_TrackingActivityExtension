@@ -42,13 +42,13 @@ export function activate(context: vscode.ExtensionContext) {
         {
           enableScripts: true,
           localResourceRoots: [
-            vscode.Uri.file(path.join(context.extensionPath, "src")),
+            vscode.Uri.file(path.join(context.extensionPath, "out")),
           ],
           retainContextWhenHidden: true,
         }
       );
       const graphJsUri = panel.webview.asWebviewUri(
-        vscode.Uri.joinPath(context.extensionUri, "src", "graph", "graph.js")
+        vscode.Uri.joinPath(context.extensionUri, "out", "graph", "graph.js")
       );
 
       const html = getWebviewContent(panel.webview, graphJsUri);

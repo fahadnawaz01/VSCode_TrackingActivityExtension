@@ -155,11 +155,13 @@ export async function fetchLogs(panel: vscode.WebviewPanel) {
   const owner = config.get<string>("gitUsername");
   const repo = config.get<string>("repo");
   const githubToken = config.get<string>("gitHubToken");
+
   yearList = [];
   monthList = [];
 
   if (owner && repo && githubToken) {
     const logs = await fetchLogsFromGitHub(owner, repo, githubToken);
+
     if (logs) {
       panel.webview.postMessage({
         command: "updateData",
